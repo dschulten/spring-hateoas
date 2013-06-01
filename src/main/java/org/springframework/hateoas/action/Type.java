@@ -1,7 +1,8 @@
 package org.springframework.hateoas.action;
 
 public enum Type {
-	TEXT("text"), HIDDEN("hidden"), PASSWORD("password"), COLOR("color"), DATE("date"), DATETIME("datetime"), DATETIME_LOCAL(
+	/** Determine type text or number, depending on the annotated parameter */
+	AUTO(null), TEXT("text"), HIDDEN("hidden"), PASSWORD("password"), COLOR("color"), DATE("date"), DATETIME("datetime"), DATETIME_LOCAL(
 			"datetime-local"), EMAIL("email"), MONTH("month"), NUMBER("number"), RANGE("range"), SEARCH("search"), TEL("tel"), TIME(
 			"time"), URL("url"), WEEK("week");
 

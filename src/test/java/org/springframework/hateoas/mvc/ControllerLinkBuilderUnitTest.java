@@ -29,7 +29,7 @@ import org.springframework.hateoas.Identifiable;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.TestUtils;
 import org.springframework.hateoas.action.ActionDescriptor;
-import org.springframework.hateoas.mvc.ControllerActionBuilderTest.PersonControllerForForm;
+import org.springframework.hateoas.mvc.ControllerActionBuilderTest.PersonControllerForAction;
 import org.springframework.http.HttpEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;

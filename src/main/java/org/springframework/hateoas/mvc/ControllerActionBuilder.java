@@ -11,6 +11,7 @@ import org.springframework.hateoas.action.ActionDescriptor;
 import org.springframework.hateoas.core.AnnotationAttribute;
 import org.springframework.hateoas.core.DummyInvocationUtils.LastInvocationAware;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,9 @@ public class ControllerActionBuilder {
 	private static final AnnotatedParametersParameterAccessor REQUEST_PARAM_ACCESSOR = new AnnotatedParametersParameterAccessor(
 			new AnnotationAttribute(RequestParam.class));
 
+	private static final AnnotatedParametersParameterAccessor PATH_VARIABLE_ACCESSOR = new AnnotatedParametersParameterAccessor(
+			new AnnotationAttribute(PathVariable.class));
+
 	/**
 	 * Creates an ActionDescriptor which tells a hypermedia client how to pass data to a resource, e.g. how to construct a
 	 * POST or PUT body or how to fill in GET parameters. The action descriptor knows the names of the expected
@@ -31,8 +35,8 @@ public class ControllerActionBuilder {
 	 * (see below for examples). Another possibility is to generate a json schema or a html documentation page from the
 	 * action descriptor and make it available at a custom rel's URI.
 	 * <p>
-	 * For instance, the {@link HtmlResourceMessageConverter} can create xhtml forms, which can be used by hypermedia-enabled
-	 * clients.
+	 * For instance, the {@link HtmlResourceMessageConverter} can create xhtml forms, which can be used by
+	 * hypermedia-enabled clients.
 	 * <p>
 	 * The following example method searchPersonForm creates a search form which has the method showPerson as action
 	 * target. It is returned by the application if the client requests the /person resource without parameters.
@@ -72,7 +76,7 @@ public class ControllerActionBuilder {
 	 * @see <a href="https://github.com/kevinswiber/siren">Siren Hypermedia Format</a>
 	 * @see <a href="http://tools.ietf.org/html/draft-kelly-json-hal-05#appendix-B.5">Why does HAL have no forms</a>
 	 */
-	public static ActionDescriptor createActionFor(Object invocationValue, String actionName) {
+	public static ActionDescriptor actionFor(Object invocationValue, String actionName) {
 
 		Assert.isInstanceOf(LastInvocationAware.class, invocationValue);
 		LastInvocationAware invocations = (LastInvocationAware) invocationValue;
@@ -92,7 +96,19 @@ public class ControllerActionBuilder {
 		Map<String, MethodParameterValue> requestParamMap = REQUEST_PARAM_ACCESSOR
 				.getBoundMethodParameterValues(invocation);
 		for (Entry<String, MethodParameterValue> entry : requestParamMap.entrySet()) {
-			actionDescriptor.addRequestParam(entry.getKey(), entry.getValue());
+			MethodParameterValue value = entry.getValue();
+			if (value != null) {
+				actionDescriptor.addRequestParam(entry.getKey(), entry.getValue());
+			}
+		}
+
+		Map<String, MethodParameterValue> pathVariableMap = PATH_VARIABLE_ACCESSOR
+				.getBoundMethodParameterValues(invocation);
+		for (Entry<String, MethodParameterValue> entry : pathVariableMap.entrySet()) {
+			MethodParameterValue value = entry.getValue();
+			if (value != null) {
+				actionDescriptor.addPathVariable(entry.getKey(), value);
+			}
 		}
 
 		return actionDescriptor;

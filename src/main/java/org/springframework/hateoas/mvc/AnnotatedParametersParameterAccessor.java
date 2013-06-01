@@ -17,7 +17,7 @@ package org.springframework.hateoas.mvc;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -149,13 +149,13 @@ class AnnotatedParametersParameterAccessor {
 	public Map<String, MethodParameterValue> getBoundMethodParameterValues(MethodInvocation invocation) {
 
 		List<BoundMethodParameter> boundParameters = getBoundParameters(invocation);
-		Map<String, MethodParameterValue> result = new HashMap<String, MethodParameterValue>();
+		Map<String, MethodParameterValue> result = new LinkedHashMap<String, MethodParameterValue>();
 		for (BoundMethodParameter boundMethodParameter : boundParameters) {
 			String key = boundMethodParameter.getVariableName();
 			MethodParameter parameter = boundMethodParameter.parameter;
 			Object value = boundMethodParameter.getValue();
 			String formatted = boundMethodParameter.asString();
-			result.put(key , new MethodParameterValue(parameter , value, formatted));
+			result.put(key, new MethodParameterValue(parameter, value, formatted, boundParameters));
 		}
 		return result;
 	}
