@@ -64,4 +64,11 @@ public interface LinkBuilder {
 	 * @return
 	 */
 	Link withSelfRel();
+	
+	/**
+	 * Defines the httpMethod to be used for the {@link Link} built by the current builder instance. GET is the default.
+	 * @param httpMethod one of GET, POST, HEAD, OPTIONS, PUT, PATCH, DELETE, TRACE
+	 * @return LinkBuilder which creates Links for the given method.
+	 */
+	LinkBuilder withHttpMethod(String httpMethod);
 }

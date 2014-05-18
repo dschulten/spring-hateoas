@@ -20,6 +20,7 @@ import java.net.URI;
 import org.springframework.hateoas.Identifiable;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
@@ -34,6 +35,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 public abstract class LinkBuilderSupport<T extends LinkBuilder> implements LinkBuilder {
 
 	private final UriComponents uriComponents;
+	
+	private String requestMethod = "GET";
 
 	/**
 	 * Creates a new {@link LinkBuilderSupport} using the given {@link UriComponentsBuilder}.
@@ -111,8 +114,10 @@ public abstract class LinkBuilderSupport<T extends LinkBuilder> implements LinkB
 	 * @see org.springframework.hateoas.LinkBuilder#withRel(java.lang.String)
 	 */
 	public Link withRel(String rel) {
-		return new Link(this.toString(), rel);
+		return new Link(new UriTemplate(uriComponents.toUriString()), rel, requestMethod);
 	}
+	
+
 
 	/*
 	 * (non-Javadoc)
@@ -128,7 +133,7 @@ public abstract class LinkBuilderSupport<T extends LinkBuilder> implements LinkB
 	 */
 	@Override
 	public String toString() {
-		return toUri().normalize().toASCIIString();
+		return toUri().normalize().toASCIIString(); 
 	}
 
 	/**
@@ -137,6 +142,16 @@ public abstract class LinkBuilderSupport<T extends LinkBuilder> implements LinkB
 	 * @return
 	 */
 	protected abstract T getThis();
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.hateoas.LinkBuilder#withMethod(java.lang.String)
+	 */
+	@Override
+	public T withHttpMethod(String httpMethod) {
+		this.requestMethod = httpMethod;
+		return getThis();
+	}
 
 	/**
 	 * Creates a new instance of the sub-class.

@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -55,6 +56,7 @@ public class Link implements Serializable {
 	@XmlAttribute private String rel;
 	@XmlAttribute private String href;
 	@XmlTransient @JsonIgnore private UriTemplate template;
+	@XmlTransient @JsonIgnore private RequestMethod requestMethod = RequestMethod.GET;
 
 	/**
 	 * Creates a new link to the given URI with the self rel.
@@ -73,7 +75,7 @@ public class Link implements Serializable {
 	 * @param rel must not be {@literal null} or empty.
 	 */
 	public Link(String href, String rel) {
-		this(new UriTemplate(href), rel);
+		this(new UriTemplate(href), rel, "GET");
 	}
 
 	/**
@@ -81,15 +83,18 @@ public class Link implements Serializable {
 	 * 
 	 * @param template must not be {@literal null}.
 	 * @param rel must not be {@literal null} or empty.
+	 * @param requestMethod must not be {@literal null} or empty.
 	 */
-	public Link(UriTemplate template, String rel) {
+	public Link(UriTemplate template, String rel, String requestMethod) {
 
-		Assert.notNull(template, "UriTempalte must not be null!");
+		Assert.notNull(template, "UriTemplate must not be null!");
 		Assert.hasText(rel, "Rel must not be null or empty!");
+		Assert.hasText(rel, "RequestMethod must not be null or empty!");
 
 		this.template = template;
 		this.href = template.toString();
 		this.rel = rel;
+		this.requestMethod = RequestMethod.valueOf(requestMethod);
 	}
 
 	/**
@@ -193,6 +198,15 @@ public class Link implements Serializable {
 
 		return template;
 	}
+	
+	/**
+	 * Returns the base uri of this link, without template variables.
+	 * @return
+	 */
+	@JsonIgnore
+	public String getBaseUri() {
+		return getUriTemplate().getBaseUri();
+	}
 
 	/* 
 	 * (non-Javadoc)
@@ -290,5 +304,13 @@ public class Link implements Serializable {
 		}
 
 		return attributes;
+	}
+	
+	/**
+	 * Returns the http method to use with this {@link Link}
+	 * @return method, default is GET
+	 */
+	public RequestMethod getRequestMethod() {
+		return requestMethod;
 	}
 }

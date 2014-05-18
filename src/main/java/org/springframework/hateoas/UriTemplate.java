@@ -73,7 +73,7 @@ public class UriTemplate implements Iterable<TemplateVariable> {
 				variables.add(variable);
 			}
 		}
-
+		
 		this.variables = variables.isEmpty() ? TemplateVariables.NONE : new TemplateVariables(variables);
 		this.baseUri = template.substring(0, baseUriEndIndex);
 	}
@@ -129,6 +129,13 @@ public class UriTemplate implements Iterable<TemplateVariable> {
 	 */
 	public List<TemplateVariable> getVariables() {
 		return this.variables.asList();
+	}
+	
+	/**
+	 * Returns the base uri without template variables.
+	 */
+	public String getBaseUri() {
+		return baseUri;
 	}
 
 	/**

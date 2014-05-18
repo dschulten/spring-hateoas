@@ -64,9 +64,15 @@ public @interface EnableHypermediaSupport {
 		/**
 		 * HAL - Hypermedia Application Language.
 		 * 
-		 * @see http://stateless.co/hal_specification.html
-		 * @see http://tools.ietf.org/html/draft-kelly-json-hal-05
+		 * @see <a href="http://stateless.co/hal_specification.html">hal specification</a>
+		 * @see <a href="http://tools.ietf.org/html/draft-kelly-json-hal-05">ietf draft-kelly-json-hal</a>
 		 */
-		HAL;
+		HAL,
+		/**
+		 * Uniform Basis for Exchanging Representations.
+		 * 
+		 * @see <a href="http://g.mamund.com/uber">UBER media type</a>
+		 */
+		UBER;
 	}
 }

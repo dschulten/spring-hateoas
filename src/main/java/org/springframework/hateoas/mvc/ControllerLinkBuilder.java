@@ -17,17 +17,25 @@ package org.springframework.hateoas.mvc;
 
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.core.AnnotationAttribute;
 import org.springframework.hateoas.core.AnnotationMappingDiscoverer;
 import org.springframework.hateoas.core.DummyInvocationUtils;
 import org.springframework.hateoas.core.LinkBuilderSupport;
 import org.springframework.hateoas.core.MappingDiscoverer;
+import org.springframework.hateoas.core.MethodParameters;
+import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -43,6 +51,7 @@ import org.springframework.web.util.UriTemplate;
 public class ControllerLinkBuilder extends LinkBuilderSupport<ControllerLinkBuilder> {
 
 	private static final MappingDiscoverer DISCOVERER = new AnnotationMappingDiscoverer(RequestMapping.class);
+
 	private static final ControllerLinkBuilderFactory FACTORY = new ControllerLinkBuilderFactory();
 
 	/**
@@ -86,9 +95,62 @@ public class ControllerLinkBuilder extends LinkBuilderSupport<ControllerLinkBuil
 
 	public static ControllerLinkBuilder linkTo(Method method, Object... parameters) {
 
-		UriTemplate template = new UriTemplate(DISCOVERER.getMapping(method));
-		URI uri = template.expand(parameters);
-		return new ControllerLinkBuilder(getBuilder()).slash(uri);
+		String requestMapping = DISCOVERER.getMapping(method);
+
+		URI baseUri = new UriTemplate(requestMapping).expand(parameters);
+
+
+		RequestMethod httpMethod = getRequestMethod(method);
+
+		String requestTemplate = buildTemplate(method, "{?", ",", "}", "%s");
+		
+		String template = baseUri.toString() + requestTemplate;
+		return new ControllerLinkBuilder(getBuilder()).withHttpMethod(httpMethod.name()).slash(template);
+	}
+
+	private static String buildTemplate(Method method, String prefix, String separator, String suffix, String parameterTemplate) {
+		List<MethodParameter> requestParams = new MethodParameters(method, new AnnotationAttribute(RequestParam.class))
+		.getParameters();
+		StringBuilder sb = new StringBuilder();
+		for (MethodParameter methodParameter : requestParams) {
+			if (sb.length() == 0) {
+				sb.append(prefix);
+			} else {
+				sb.append(separator);
+			}
+			RequestParam parameterAnnotation = methodParameter.getParameterAnnotation(RequestParam.class);
+			String requestParamName = parameterAnnotation.value();
+			String parameterName;
+			if ("".equals(requestParamName)) {
+				parameterName = methodParameter.getParameterName();
+			} else {
+				parameterName = requestParamName;
+			}
+			sb.append(String.format(parameterTemplate, parameterName, parameterName));
+
+		}
+
+		if (sb.length() > 0) {
+			sb.append(suffix);
+		}
+		return sb.toString();
+	}
+
+	
+	private static RequestMethod getRequestMethod(Method method) {
+		RequestMapping methodRequestMapping = AnnotationUtils.findAnnotation(method, RequestMapping.class);
+		RequestMethod requestMethod;
+		if (methodRequestMapping != null) {
+			RequestMethod[] methods = methodRequestMapping.method();
+			if (methods.length == 0) {
+				requestMethod = RequestMethod.GET;
+			} else {
+				requestMethod = methods[0];
+			}
+		} else {
+			requestMethod = RequestMethod.GET; // default
+		}
+		return requestMethod;
 	}
 
 	/**

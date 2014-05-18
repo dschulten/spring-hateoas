@@ -25,4 +25,7 @@ import org.springframework.http.MediaType;
 public class MediaTypes {
 
 	public static final MediaType HAL_JSON = MediaType.valueOf("application/hal+json");
+	public static final MediaType UBER_XML = MediaType.parseMediaType("application/vnd.uber-amundsen+xml");
+	public static final MediaType UBER_JSON = MediaType.parseMediaType("application/vnd.uber-amundsen+json");
+	
 }

@@ -15,9 +15,9 @@
  */
 package org.springframework.hateoas.config;
 
-import static org.springframework.beans.factory.support.BeanDefinitionBuilder.*;
-import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.*;
-import static org.springframework.hateoas.MediaTypes.*;
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
+import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.registerBeanDefinition;
+import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +52,8 @@ import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.CurieProvider;
 import org.springframework.hateoas.hal.HalLinkDiscoverer;
 import org.springframework.hateoas.hal.Jackson2HalModule;
+import org.springframework.hateoas.uber.UberJackson2HttpMessageConverter;
+import org.springframework.hateoas.uber.UberLinkDiscoverer;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.plugin.core.PluginRegistry;
@@ -75,6 +77,7 @@ class HypermediaSupportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 	private static final String DELEGATING_REL_PROVIDER_BEAN_NAME = "_relProvider";
 	private static final String LINK_DISCOVERER_REGISTRY_BEAN_NAME = "_linkDiscovererRegistry";
 	private static final String HAL_OBJECT_MAPPER_BEAN_NAME = "_halObjectMapper";
+	private static final String UBER_OBJECT_MAPPER_BEAN_NAME = "_uberObjectMapper";
 
 	private static final boolean JACKSON2_PRESENT = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper",
 			null);
@@ -114,6 +117,18 @@ class HypermediaSupportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 				registerSourcedBeanDefinition(halQueryMapperBuilder, metadata, registry, HAL_OBJECT_MAPPER_BEAN_NAME);
 
 				BeanDefinitionBuilder builder = rootBeanDefinition(Jackson2ModuleRegisteringBeanPostProcessor.class);
+				registerSourcedBeanDefinition(builder, metadata, registry);
+			}
+		}
+
+		if (types.contains(HypermediaType.UBER)) {
+
+			if (JACKSON2_PRESENT) {
+
+				BeanDefinitionBuilder uberQueryMapperBuilder = rootBeanDefinition(ObjectMapper.class);
+				registerSourcedBeanDefinition(uberQueryMapperBuilder, metadata, registry, UBER_OBJECT_MAPPER_BEAN_NAME);
+
+				BeanDefinitionBuilder builder = rootBeanDefinition(UberJackson2HttpMessageConverterRegisteringBeanPostProcessor.class);
 				registerSourcedBeanDefinition(builder, metadata, registry);
 			}
 		}
@@ -176,11 +191,14 @@ class HypermediaSupportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 		AbstractBeanDefinition definition;
 
 		switch (type) {
-			case HAL:
-				definition = new RootBeanDefinition(HalLinkDiscoverer.class);
-				break;
-			default:
-				throw new IllegalStateException(String.format("Unsupported hypermedia type %s!", type));
+		case HAL:
+			definition = new RootBeanDefinition(HalLinkDiscoverer.class);
+			break;
+		case UBER:
+			definition = new RootBeanDefinition(UberLinkDiscoverer.class);
+			break;
+		default:
+			throw new IllegalStateException(String.format("Unsupported hypermedia type %s!", type));
 		}
 
 		definition.setSource(this);
@@ -204,6 +222,58 @@ class HypermediaSupportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 		BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, name);
 		registerBeanDefinition(holder, registry);
 		return name;
+	}
+
+	static class UberJackson2HttpMessageConverterRegisteringBeanPostProcessor implements BeanPostProcessor,
+			BeanFactoryAware {
+
+		// TODO implement relProvider
+		private RelProvider relProvider;
+
+		@Override
+		public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+			this.relProvider = beanFactory.getBean(DELEGATING_REL_PROVIDER_BEAN_NAME, RelProvider.class);
+		}
+
+		@Override
+		public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+			if (bean instanceof RequestMappingHandlerAdapter) {
+
+				RequestMappingHandlerAdapter adapter = (RequestMappingHandlerAdapter) bean;
+				adapter.setMessageConverters(potentiallyRegisterConverter(adapter.getMessageConverters()));
+			}
+
+			if (bean instanceof AnnotationMethodHandlerAdapter) {
+
+				AnnotationMethodHandlerAdapter adapter = (AnnotationMethodHandlerAdapter) bean;
+				List<HttpMessageConverter<?>> augmentedConverters = potentiallyRegisterConverter(Arrays.asList(adapter
+						.getMessageConverters()));
+				adapter
+						.setMessageConverters(augmentedConverters.toArray(new HttpMessageConverter<?>[augmentedConverters.size()]));
+			}
+
+			return bean;
+		}
+
+		private List<HttpMessageConverter<?>> potentiallyRegisterConverter(List<HttpMessageConverter<?>> converters) {
+
+			for (HttpMessageConverter<?> converter : converters) {
+				if (converter instanceof UberJackson2HttpMessageConverter) {
+					return converters;
+				}
+			}
+			UberJackson2HttpMessageConverter uberConverter = new UberJackson2HttpMessageConverter();
+
+			List<HttpMessageConverter<?>> result = new ArrayList<HttpMessageConverter<?>>(converters.size());
+			result.add(uberConverter);
+			result.addAll(converters);
+			return result;
+		}
+
+		@Override
+		public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+			return bean;
+		}
 	}
 
 	/**
