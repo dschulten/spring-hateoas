@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import org.springframework.web.util.UriTemplate;
  * @author Ricardo Gladwell
  * @author Oliver Gierke
  * @author Dietrich Schulten
+ * @author Kamill Sokol
  */
 public class ControllerLinkBuilderFactory implements MethodLinkBuilderFactory<ControllerLinkBuilder> {
 
@@ -103,7 +104,7 @@ public class ControllerLinkBuilderFactory implements MethodLinkBuilderFactory<Co
 		Iterator<Object> classMappingParameters = invocations.getObjectParameters();
 		Method method = invocation.getMethod();
 
-		String mapping = DISCOVERER.getMapping(method);
+		String mapping = DISCOVERER.getMapping(invocation.getTargetType(), method);
 		UriComponentsBuilder builder = ControllerLinkBuilder.getBuilder().path(mapping);
 
 		UriTemplate template = new UriTemplate(mapping);
@@ -133,7 +134,7 @@ public class ControllerLinkBuilderFactory implements MethodLinkBuilderFactory<Co
 		}
 
 		UriComponents components = applyUriComponentsContributer(builder, invocation).buildAndExpand(values);
-		return new ControllerLinkBuilder(UriComponentsBuilder.fromUri(components.toUri()));
+		return new ControllerLinkBuilder(UriComponentsBuilder.fromUriString(components.toUriString()));
 	}
 
 	/* 

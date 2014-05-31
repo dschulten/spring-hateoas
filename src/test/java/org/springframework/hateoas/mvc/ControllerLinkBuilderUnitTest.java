@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 
  * @author Oliver Gierke
  * @author Dietrich Schulten
+ * @author Kamill Sokol
  */
 public class ControllerLinkBuilderUnitTest extends TestUtils {
 
@@ -295,6 +296,65 @@ public class ControllerLinkBuilderUnitTest extends TestUtils {
 		linkTo(methodOn(ControllerWithMethods.class).methodWithRequestParam(null));
 	}
 
+	/**
+	 * @see #170
+	 */
+	@Test
+	public void usesForwardedPortFromHeader() {
+
+		request.addHeader("X-Forwarded-Host", "foobarhost");
+		request.addHeader("X-Forwarded-Port", "9090");
+		request.setServerPort(8080);
+
+		Link link = linkTo(PersonControllerImpl.class).withSelfRel();
+
+		assertThat(link.getHref(), startsWith("http://foobarhost:9090/"));
+	}
+
+	/**
+	 * @see #170
+	 */
+	@Test
+	public void usesForwardedHostFromHeaderWithDefaultPort() {
+
+		request.addHeader("X-Forwarded-Host", "foobarhost");
+		request.setServerPort(8080);
+
+		Link link = linkTo(PersonControllerImpl.class).withSelfRel();
+		assertThat(link.getHref(), startsWith("http://foobarhost/"));
+	}
+
+	/**
+	 * @see #114
+	 */
+	@Test
+	public void discoversParentClassTypeMappingForInvocation() {
+
+		Link link = linkTo(methodOn(ChildController.class).myMethod()).withSelfRel();
+		assertThat(link.getHref(), endsWith("/parent/child"));
+	}
+
+	/**
+	 * @see #114
+	 */
+	@Test
+	public void includesTypeMappingFromChildClass() {
+
+		Link link = linkTo(methodOn(ChildWithTypeMapping.class).myMethod()).withSelfRel();
+		assertThat(link.getHref(), endsWith("/child/parent"));
+	}
+
+	/**
+	 * @see #96
+	 */
+	@Test
+	public void linksToMethodWithPathVariableContainingBlank() {
+
+		Link link = linkTo(methodOn(ControllerWithMethods.class).methodWithPathVariable("with blank")).withSelfRel();
+		assertThat(link.getRel(), is(Link.REL_SELF));
+		assertThat(link.getHref(), endsWith("/something/with%20blank/foo"));
+	}
+
 	private static UriComponents toComponents(Link link) {
 		return UriComponentsBuilder.fromUriString(link.getHref()).build();
 	}
@@ -310,13 +370,9 @@ public class ControllerLinkBuilderUnitTest extends TestUtils {
 	}
 
 	@RequestMapping("/people")
-	interface PersonController {
+	interface PersonController {}
 
-	}
-
-	class PersonControllerImpl implements PersonController {
-
-	}
+	class PersonControllerImpl implements PersonController {}
 
 	@RequestMapping("/people/{id}/addresses")
 	static class PersonsAddressesController {
@@ -371,4 +427,22 @@ public class ControllerLinkBuilderUnitTest extends TestUtils {
 			return null;
 		}
 	}
+
+	@RequestMapping("/parent")
+	interface ParentController {}
+
+	interface ChildController extends ParentController {
+
+		@RequestMapping("/child")
+		Object myMethod();
+	}
+
+	interface ParentWithMethod {
+
+		@RequestMapping("/parent")
+		Object myMethod();
+	}
+
+	@RequestMapping("/child")
+	interface ChildWithTypeMapping extends ParentWithMethod {}
 }
