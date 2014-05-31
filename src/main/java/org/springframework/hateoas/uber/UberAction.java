@@ -20,7 +20,7 @@ public enum UberAction {
 	private UberAction(RequestMethod method) {
 		this.httpMethod = method;
 	}
-	
+
 	/**
 	 * Maps given request method to uber action, GET will be mapped as null since it is the default.
 	 * @param method to map

@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.util.UriComponentsBuilder;
 
 public class UberUtils {
-	
+
 	private UberUtils () {
-		
+
 	}
 
 	static final Set<String> FILTER_RESOURCE_SUPPORT = new HashSet<String>(Arrays.asList("class", "links", "id"));
@@ -33,7 +33,7 @@ public class UberUtils {
 
 	/**
 	 * Recursively converts object to nodes of uber data.
-	 * 
+	 *
 	 * @param object to convert
 	 * @param objectNode to convert into
 	 */
@@ -53,7 +53,7 @@ public class UberUtils {
 				Resources<?> resources = (Resources<?>) object;
 
 				// TODO set name using EVO see HypermediaSupportBeanDefinitionRegistrar
-				
+
 				objectNode.addLinks(resources.getLinks());
 
 				Collection<?> content = resources.getContent();
@@ -61,11 +61,11 @@ public class UberUtils {
 				return;
 			} else if (object instanceof ResourceSupport) {
 				ResourceSupport resource = (ResourceSupport) object;
-				
+
 				objectNode.addLinks(resource.getLinks());
-				
+
 				// wrap object attributes below to avoid endless loop
-				
+
 			} else if (object instanceof Collection) {
 				Collection<?> collection = (Collection<?>) object;
 				for (Object item : collection) {
@@ -139,7 +139,7 @@ public class UberUtils {
 
 	/**
 	 * Converts link to uber node.
-	 * 
+	 *
 	 * @param link to convert
 	 * @return uber link
 	 */

@@ -74,7 +74,7 @@ public class UberJackson2HttpMessageConverter extends AbstractHttpMessageConvert
 
 	/**
 	 * Determine the JSON encoding to use for the given content type.
-	 * 
+	 *
 	 * @param contentType the media type as requested by the caller
 	 * @return the JSON encoding to use (never {@code null})
 	 */

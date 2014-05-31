@@ -39,7 +39,7 @@ public abstract class AbstractUberNode implements Iterable<UberNode> {
 
 	/**
 	 * Gets first child of this uber node having the given name attribute.
-	 * 
+	 *
 	 * @param name to look up
 	 * @return found child or null
 	 */
@@ -57,7 +57,7 @@ public abstract class AbstractUberNode implements Iterable<UberNode> {
 
 	/**
 	 * Gets first child of this uber node having the given rel attribute.
-	 * 
+	 *
 	 * @param name to look up
 	 * @return found child or null
 	 */
