@@ -53,7 +53,7 @@ import org.springframework.hateoas.hal.CurieProvider;
 import org.springframework.hateoas.hal.HalLinkDiscoverer;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.hateoas.uber.UberJackson2HttpMessageConverter;
-import org.springframework.hateoas.uber.UberLinkDiscoverer;
+import org.springframework.hateoas.uber.UberJsonLinkDiscoverer;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.plugin.core.PluginRegistry;
@@ -195,7 +195,7 @@ class HypermediaSupportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 			definition = new RootBeanDefinition(HalLinkDiscoverer.class);
 			break;
 		case UBER:
-			definition = new RootBeanDefinition(UberLinkDiscoverer.class);
+			definition = new RootBeanDefinition(UberJsonLinkDiscoverer.class);
 			break;
 		default:
 			throw new IllegalStateException(String.format("Unsupported hypermedia type %s!", type));
