@@ -1,0 +1,7 @@
+org.springframework.hateoas
+org.springframework.hateoas.client
+org.springframework.hateoas.config
+org.springframework.hateoas.core
+org.springframework.hateoas.hal
+org.springframework.hateoas.jaxrs
+org.springframework.hateoas.mvc
