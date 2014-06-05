@@ -15,9 +15,10 @@
  */
 package org.springframework.hateoas.client;
 
-import static net.jadler.Jadler.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static net.jadler.Jadler.verifyThatRequest;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
@@ -118,6 +119,16 @@ public class TraversonTests {
 		Resource<Actor> result = traverson.follow("movies", "movie", "actor").toObject(typeReference);
 
 		assertThat(result.getContent().name, is("Keanu Reaves"));
+	}
+	
+	@Test
+	public void readsTraversalIntoResourcesInstance() {
+
+//		ParameterizedTypeReference<Resources<Actor>> typeReference = new ParameterizedTypeReference<Resource<Actor>>() {};
+//		Resource<Actor> result = traverson.follow("movies").toObject(typeReference);
+		String result = traverson.follow("movies").toObject(String.class);
+		
+		assertThat(result, is("Keanu Reaves"));
 	}
 
 	private void setUpActors() {

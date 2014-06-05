@@ -23,6 +23,7 @@ import static net.jadler.Jadler.port;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -94,6 +95,7 @@ public class DefaultJsonServer implements Closeable {
 
 		return resourceUri;
 	}
+	
 
 	public void finishMocking() {
 
