@@ -264,7 +264,7 @@ public class Jackson2HalModule extends SimpleModule {
 					}
 				}
 			} else {
-				serializer.serialize(value, jgen, provider);
+				serializer.unwrappingSerializer(null).serialize(value, jgen, provider);
 			}
 
 		}
